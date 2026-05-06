@@ -28,6 +28,7 @@ export default function Dashboard() {
   const [color, setColor] = useState('#3b82f6');
   const [creating, setCreating] = useState(false);
   const [confirmModal, setConfirmModal] = useState(null);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     fetchBoards();
@@ -99,6 +100,11 @@ export default function Dashboard() {
     navigate('/login');
   };
 
+    const filteredBoards = boards.filter((board) =>
+    board.title.toLowerCase().includes(search.toLowerCase()) ||
+    board.description?.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Navbar */}
@@ -117,7 +123,7 @@ export default function Dashboard() {
 
       {/* Content */}
       <div className="max-w-6xl mx-auto px-6 py-8">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-gray-800">My Boards</h2>
           <button
             onClick={() => setShowModal(true)}
@@ -127,20 +133,49 @@ export default function Dashboard() {
           </button>
         </div>
 
+        {/* Search */}
+        <div className="relative mb-6">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search boards..."
+            className="w-full border border-gray-300 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          />
+          <span className="absolute left-3 top-2.5 text-gray-400 text-sm">🔍</span>
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 text-sm"
+            >
+              ×
+            </button>
+          )}
+        </div>
+
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <BoardCardSkeleton key={i} />
             ))}
           </div>
-        ) : boards.length === 0 ? (
+                ) : filteredBoards.length === 0 ? (
           <div className="text-center text-gray-500 py-12">
-            <p className="text-lg mb-2">No boards yet</p>
-            <p className="text-sm">Create your first board to get started!</p>
+            {search ? (
+              <>
+                <p className="text-lg mb-2">No boards found</p>
+                <p className="text-sm">Try a different search term</p>
+              </>
+            ) : (
+              <>
+                <p className="text-lg mb-2">No boards yet</p>
+                <p className="text-sm">Create your first board to get started!</p>
+              </>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {boards.map((board) => (
+            {filteredBoards.map((board) => (
               <div
                 key={board.id}
                 className="rounded-xl shadow-sm overflow-hidden hover:shadow-md transition cursor-pointer group"
