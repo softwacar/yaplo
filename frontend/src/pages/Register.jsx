@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
 export default function Register() {
   const [name, setName] = useState('');
@@ -20,7 +21,9 @@ export default function Register() {
       await register(name, email, password);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.error || 'Registration failed');
+      const message = err.response?.data?.error || 'Registration failed';
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }

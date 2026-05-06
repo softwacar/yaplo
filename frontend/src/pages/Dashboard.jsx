@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
+import toast from 'react-hot-toast';
+import ConfirmModal from '../components/ConfirmModal';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -12,6 +14,7 @@ export default function Dashboard() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [creating, setCreating] = useState(false);
+  const [confirmModal, setConfirmModal] = useState(null);
 
   useEffect(() => {
     fetchBoards();
@@ -37,26 +40,38 @@ export default function Dashboard() {
       setTitle('');
       setDescription('');
       setShowModal(false);
-    } catch (error) {
+      toast.success('Board created successfully!');
+    }catch (error) {
       console.error('Failed to create board:', error);
-    } finally {
+      toast.error('Failed to create board');
+     }finally {
       setCreating(false);
     }
   };
 
-  const handleDeleteBoard = async (boardId) => {
-    if (!confirm('Are you sure you want to delete this board?')) return;
-    try {
-      await api.delete(`/boards/${boardId}`);
-      setBoards(boards.filter((b) => b.id !== boardId));
-    } catch (error) {
-      console.error('Failed to delete board:', error);
-    }
-  };
+  const handleDeleteBoard = (boardId) => {
+  setConfirmModal({
+    title: 'Delete Board',
+    message: 'Are you sure you want to delete this board? This action cannot be undone.',
+    onConfirm: async () => {
+      try {
+        await api.delete(`/boards/${boardId}`);
+        setBoards(boards.filter((b) => b.id !== boardId));
+        toast.success('Board deleted!');
+      } catch (error) {
+        console.error('Failed to delete board:', error);
+        toast.error('Failed to delete board');
+      } finally {
+        setConfirmModal(null);
+      }
+    },
+  });
+};
 
   const handleLogout = async () => {
-    await logout();
-    navigate('/login');
+  await logout();
+  toast.success('Logged out!');
+  navigate('/login');
   };
 
   return (
@@ -174,6 +189,14 @@ export default function Dashboard() {
             </form>
           </div>
         </div>
+      )}
+       {confirmModal && (
+        <ConfirmModal
+          title={confirmModal.title}
+          message={confirmModal.message}
+          onConfirm={confirmModal.onConfirm}
+          onCancel={() => setConfirmModal(null)}
+        />
       )}
     </div>
   );

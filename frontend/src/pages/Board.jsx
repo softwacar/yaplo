@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import api from '../api/axios';
+import ConfirmModal from '../components/ConfirmModal';
 
 export default function Board() {
   const { id } = useParams();
@@ -11,6 +13,7 @@ export default function Board() {
   const [newListTitle, setNewListTitle] = useState('');
   const [showAddList, setShowAddList] = useState(false);
   const [addingList, setAddingList] = useState(false);
+  const [confirmModal, setConfirmModal] = useState(null);
 
   useEffect(() => {
     fetchBoard();
@@ -38,21 +41,32 @@ export default function Board() {
       setLists([...lists, { ...res.data.list, cards: [] }]);
       setNewListTitle('');
       setShowAddList(false);
+      toast.success('List added!');
     } catch (error) {
       console.error('Failed to add list:', error);
+      toast.error('Failed to add list');
     } finally {
       setAddingList(false);
     }
   };
 
-  const handleDeleteList = async (listId) => {
-    if (!confirm('Delete this list and all its cards?')) return;
-    try {
-      await api.delete(`/boards/${id}/lists/${listId}`);
-      setLists(lists.filter((l) => l.id !== listId));
-    } catch (error) {
-      console.error('Failed to delete list:', error);
-    }
+  const handleDeleteList = (listId) => {
+    setConfirmModal({
+      title: 'Delete List',
+      message: 'Are you sure? All cards in this list will be deleted.',
+      onConfirm: async () => {
+        try {
+          await api.delete(`/boards/${id}/lists/${listId}`);
+          setLists(lists.filter((l) => l.id !== listId));
+          toast.success('List deleted!');
+        } catch (error) {
+          console.error('Failed to delete list:', error);
+          toast.error('Failed to delete list');
+        } finally {
+          setConfirmModal(null);
+        }
+      },
+    });
   };
 
   const handleAddCard = async (listId, title) => {
@@ -61,20 +75,32 @@ export default function Board() {
       setLists(lists.map((l) =>
         l.id === listId ? { ...l, cards: [...l.cards, res.data.card] } : l
       ));
+      toast.success('Card added!');
     } catch (error) {
       console.error('Failed to add card:', error);
+      toast.error('Failed to add card');
     }
   };
 
-  const handleDeleteCard = async (listId, cardId) => {
-    try {
-      await api.delete(`/boards/${id}/lists/${listId}/cards/${cardId}`);
-      setLists(lists.map((l) =>
-        l.id === listId ? { ...l, cards: l.cards.filter((c) => c.id !== cardId) } : l
-      ));
-    } catch (error) {
-      console.error('Failed to delete card:', error);
-    }
+  const handleDeleteCard = (listId, cardId) => {
+    setConfirmModal({
+      title: 'Delete Card',
+      message: 'Are you sure you want to delete this card?',
+      onConfirm: async () => {
+        try {
+          await api.delete(`/boards/${id}/lists/${listId}/cards/${cardId}`);
+          setLists(lists.map((l) =>
+            l.id === listId ? { ...l, cards: l.cards.filter((c) => c.id !== cardId) } : l
+          ));
+          toast.success('Card deleted!');
+        } catch (error) {
+          console.error('Failed to delete card:', error);
+          toast.error('Failed to delete card');
+        } finally {
+          setConfirmModal(null);
+        }
+      },
+    });
   };
 
   if (loading) return (
@@ -96,7 +122,6 @@ export default function Board() {
 
       {/* Board Content */}
       <div className="p-6 flex gap-4 overflow-x-auto min-h-screen items-start">
-        {/* Lists */}
         {lists.map((list) => (
           <ListColumn
             key={list.id}
@@ -146,6 +171,15 @@ export default function Board() {
           )}
         </div>
       </div>
+
+      {confirmModal && (
+        <ConfirmModal
+          title={confirmModal.title}
+          message={confirmModal.message}
+          onConfirm={confirmModal.onConfirm}
+          onCancel={() => setConfirmModal(null)}
+        />
+      )}
     </div>
   );
 }
@@ -168,7 +202,6 @@ function ListColumn({ list, onDeleteList, onAddCard, onDeleteCard }) {
 
   return (
     <div className="flex-shrink-0 w-72 bg-gray-100 rounded-xl shadow p-3">
-      {/* List Header */}
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-semibold text-gray-800 text-sm">{list.title}</h3>
         <button
@@ -179,7 +212,6 @@ function ListColumn({ list, onDeleteList, onAddCard, onDeleteCard }) {
         </button>
       </div>
 
-      {/* Cards */}
       <div className="space-y-2 mb-2">
         {list.cards.map((card) => (
           <CardItem
@@ -190,7 +222,6 @@ function ListColumn({ list, onDeleteList, onAddCard, onDeleteCard }) {
         ))}
       </div>
 
-      {/* Add Card */}
       {showAddCard ? (
         <form onSubmit={handleAddCard}>
           <textarea
