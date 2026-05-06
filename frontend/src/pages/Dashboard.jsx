@@ -155,9 +155,19 @@ export default function Dashboard() {
                         onNavigate={() => navigate(`/boards/${board.id}`)}
                       />
                       {board.description && (
-                        <p className="text-sm text-gray-500 mt-1">{board.description}</p>
+                        <p className="text-sm text-gray-500 mt-1 line-clamp-1">{board.description}</p>
                       )}
-                      <p className="text-xs text-gray-400 mt-3">
+
+                      <div className="flex items-center gap-3 mt-3">
+                        <span className="text-xs text-gray-400 flex items-center gap-1">
+                          📋 {board.listCount || 0} lists
+                        </span>
+                        <span className="text-xs text-gray-400 flex items-center gap-1">
+                          🃏 {board.cardCount || 0} cards
+                        </span>
+                      </div>
+
+                      <p className="text-xs text-gray-400 mt-1">
                         {new Date(board.createdAt).toLocaleDateString()}
                       </p>
                     </div>

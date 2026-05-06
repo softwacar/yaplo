@@ -7,8 +7,31 @@ const getBoards = async (req, res) => {
     const boards = await prisma.board.findMany({
       where: { userId: req.userId },
       orderBy: { createdAt: 'desc' },
+      include: {
+        _count: {
+          select: {
+            lists: true,
+          },
+        },
+        lists: {
+          select: {
+            _count: {
+              select: { cards: true },
+            },
+          },
+        },
+      },
     });
-    res.json({ boards });
+
+    const boardsWithStats = boards.map((board) => ({
+      ...board,
+      listCount: board._count.lists,
+      cardCount: board.lists.reduce((acc, list) => acc + list._count.cards, 0),
+      lists: undefined,
+      _count: undefined,
+    }));
+
+    res.json({ boards: boardsWithStats });
   } catch (error) {
     console.error('Get boards error:', error);
     res.status(500).json({ error: 'Internal server error' });
