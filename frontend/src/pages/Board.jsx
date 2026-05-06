@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import api from '../api/axios';
 import ConfirmModal from '../components/ConfirmModal';
 import CardModal from '../components/CardModal';
+import { BoardPageSkeleton } from '../components/Skeleton';
 
 export default function Board() {
   const { id } = useParams();
@@ -112,28 +113,30 @@ export default function Board() {
         : l
     ));
   };
-  const handleUpdateList = async (listId, title) => {
-  try {
-    await api.put(`/boards/${id}/lists/${listId}`, { title });
-    setLists(lists.map((l) => l.id === listId ? { ...l, title } : l));
-    toast.success('List updated!');
-  } catch (error) {
-    console.error('Failed to update list:', error);
-    toast.error('Failed to update list');
-  }
-};
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">Loading...</div>
-  );
+  const handleUpdateList = async (listId, title) => {
+    try {
+      await api.put(`/boards/${id}/lists/${listId}`, { title });
+      setLists(lists.map((l) => l.id === listId ? { ...l, title } : l));
+      toast.success('List updated!');
+    } catch (error) {
+      console.error('Failed to update list:', error);
+      toast.error('Failed to update list');
+    }
+  };
+
+  if (loading) return <BoardPageSkeleton />;
 
   return (
-    <div className="min-h-screen bg-blue-600">
+    <div className="min-h-screen" style={{ backgroundColor: board?.color || '#3b82f6' }}>
       {/* Navbar */}
-      <nav className="bg-blue-700 px-6 py-4 flex items-center gap-4">
+      <nav
+        className="px-6 py-4 flex items-center gap-4"
+        style={{ backgroundColor: `${board?.color || '#3b82f6'}dd` }}
+      >
         <button
           onClick={() => navigate('/dashboard')}
-          className="text-blue-200 hover:text-white transition text-sm"
+          className="text-white/70 hover:text-white transition text-sm"
         >
           ← Dashboard
         </button>
@@ -170,7 +173,7 @@ export default function Board() {
                 <button
                   type="submit"
                   disabled={addingList}
-                  className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+                  className="bg-white/20 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-white/30 transition"
                 >
                   {addingList ? 'Adding...' : 'Add List'}
                 </button>

@@ -46,14 +46,14 @@ const getBoard = async (req, res) => {
 // @route  POST /api/boards
 const createBoard = async (req, res) => {
   try {
-    const { title, description } = req.body;
+    const { title, description, color } = req.body;
 
     if (!title) {
       return res.status(400).json({ error: 'Title is required' });
     }
 
     const board = await prisma.board.create({
-      data: { title, description, userId: req.userId },
+      data: { title, description, color: color || '#3b82f6', userId: req.userId },
     });
 
     res.status(201).json({ message: 'Board created successfully', board });
@@ -67,7 +67,7 @@ const createBoard = async (req, res) => {
 // @route  PUT /api/boards/:id
 const updateBoard = async (req, res) => {
   try {
-    const { title, description } = req.body;
+    const { title, description, color } = req.body;
 
     const board = await prisma.board.findFirst({
       where: { id: req.params.id, userId: req.userId },
@@ -79,7 +79,7 @@ const updateBoard = async (req, res) => {
 
     const updatedBoard = await prisma.board.update({
       where: { id: req.params.id },
-      data: { title, description },
+      data: { title, description, color },
     });
 
     res.json({ message: 'Board updated successfully', board: updatedBoard });
