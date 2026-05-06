@@ -87,7 +87,7 @@ const createCard = async (req, res) => {
 // @route  PUT /api/boards/:boardId/lists/:listId/cards/:id
 const updateCard = async (req, res) => {
   try {
-    const { title, description, dueDate, listId } = req.body;
+    const { title, description, dueDate, listId, position } = req.body;
 
     const board = await prisma.board.findFirst({
       where: { id: req.params.boardId, userId: req.userId },
@@ -98,7 +98,7 @@ const updateCard = async (req, res) => {
     }
 
     const card = await prisma.card.findFirst({
-      where: { id: req.params.id, listId: req.params.listId },
+      where: { id: req.params.id },
     });
 
     if (!card) {
@@ -112,6 +112,7 @@ const updateCard = async (req, res) => {
         ...(description !== undefined && { description }),
         ...(dueDate !== undefined && { dueDate: dueDate ? new Date(dueDate) : null }),
         ...(listId && { listId }),
+        ...(position !== undefined && { position }),
       },
     });
 
