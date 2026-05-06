@@ -175,7 +175,7 @@ const getMe = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.userId },
-      select: { id: true, name: true, email: true, createdAt: true },
+      select: { id: true, name: true, email: true, avatar: true, createdAt: true },
     });
     res.json({ user });
   } catch (error) {
@@ -184,4 +184,52 @@ const getMe = async (req, res) => {
   }
 };
 
-module.exports = { register, login, logout, refresh, getMe };
+// @desc   Update profile
+// @route  PUT /api/auth/profile
+const updateProfile = async (req, res) => {
+  try {
+    const { name, currentPassword, newPassword, avatar } = req.body;
+
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (newPassword) {
+      if (!currentPassword) {
+        return res.status(400).json({ error: 'Current password is required' });
+      }
+
+      const isValid = await bcrypt.compare(currentPassword, user.password);
+      if (!isValid) {
+        return res.status(401).json({ error: 'Current password is incorrect' });
+      }
+
+      if (newPassword.length < 6) {
+        return res.status(400).json({ error: 'New password must be at least 6 characters' });
+      }
+    }
+
+    const hashedPassword = newPassword
+      ? await bcrypt.hash(newPassword, 10)
+      : undefined;
+
+    const updatedUser = await prisma.user.update({
+      where: { id: req.userId },
+      data: {
+        ...(name && { name }),
+        ...(hashedPassword && { password: hashedPassword }),
+        ...(avatar !== undefined && { avatar }),
+      },
+      select: { id: true, name: true, email: true, avatar: true, createdAt: true },
+    });
+
+    res.json({ message: 'Profile updated successfully', user: updatedUser });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+ 
+module.exports = { register, login, logout, refresh, getMe, updateProfile };

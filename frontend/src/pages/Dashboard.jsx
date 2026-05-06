@@ -113,7 +113,12 @@ export default function Dashboard() {
       <nav className="bg-white dark:bg-gray-800 shadow-sm px-4 sm:px-6 py-4 flex items-center justify-between">
         <h1 className="text-xl sm:text-2xl font-bold text-blue-600">Yaplo</h1>
         <div className="flex items-center gap-2 sm:gap-4">
-          <span className="text-gray-600 dark:text-gray-300 text-sm hidden sm:block">👋 {user?.name}</span>
+          <button
+            onClick={() => navigate('/profile')}
+            className="text-gray-600 dark:text-gray-300 text-sm hidden sm:block hover:text-blue-600 transition"
+          >
+            👋 {user?.name}
+          </button>
           <span className="text-gray-600 dark:text-gray-300 text-sm sm:hidden">👋</span>
           <button
             onClick={toggleDarkMode}
