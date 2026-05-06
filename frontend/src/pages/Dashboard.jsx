@@ -6,6 +6,59 @@ import toast from 'react-hot-toast';
 import ConfirmModal from '../components/ConfirmModal';
 import { BoardCardSkeleton } from '../components/Skeleton';
 
+function BoardTitle({ board, onUpdate, onNavigate }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [title, setTitle] = useState(board.title);
+
+  const handleSave = async () => {
+    if (!title.trim() || title === board.title) {
+      setTitle(board.title);
+      setIsEditing(false);
+      return;
+    }
+    await onUpdate(board.id, title);
+    setIsEditing(false);
+  };
+
+  if (isEditing) {
+    return (
+      <input
+        type="text"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        onBlur={handleSave}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') handleSave();
+          if (e.key === 'Escape') {
+            setTitle(board.title);
+            setIsEditing(false);
+          }
+        }}
+        className="w-full border border-blue-400 rounded px-2 py-1 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
+        autoFocus
+        onClick={(e) => e.stopPropagation()}
+      />
+    );
+  }
+
+  return (
+    <div>
+      <h3
+        onClick={onNavigate}
+        className="font-semibold text-gray-800 hover:text-blue-600 transition cursor-pointer"
+      >
+        {board.title}
+      </h3>
+      <button
+        onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
+        className="text-xs text-gray-400 hover:text-blue-500 transition mt-1"
+      >
+        ✏️ Edit title
+      </button>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -69,6 +122,17 @@ export default function Dashboard() {
   });
 };
 
+const handleUpdateBoard = async (boardId, title) => {
+  try {
+    await api.put(`/boards/${boardId}`, { title });
+    setBoards(boards.map((b) => b.id === boardId ? { ...b, title } : b));
+    toast.success('Board updated!');
+  } catch (error) {
+    console.error('Failed to update board:', error);
+    toast.error('Failed to update board');
+  }
+};
+
   const handleLogout = async () => {
   await logout();
   toast.success('Logged out!');
@@ -104,12 +168,12 @@ export default function Dashboard() {
         </div>
 
         {loading ? (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-    {[1, 2, 3, 4, 5, 6].map((i) => (
-      <BoardCardSkeleton key={i} />
-    ))}
-  </div>
-) : boards.length === 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+          <BoardCardSkeleton key={i} />
+            ))}
+          </div>
+          ) : boards.length === 0 ? (
           <div className="text-center text-gray-500 py-12">
             <p className="text-lg mb-2">No boards yet</p>
             <p className="text-sm">Create your first board to get started!</p>
@@ -122,10 +186,12 @@ export default function Dashboard() {
                 className="bg-white rounded-xl shadow-sm p-5 hover:shadow-md transition cursor-pointer group"
               >
                 <div className="flex items-start justify-between">
-                  <div onClick={() => navigate(`/boards/${board.id}`)} className="flex-1">
-                    <h3 className="font-semibold text-gray-800 group-hover:text-blue-600 transition">
-                      {board.title}
-                    </h3>
+                  <div className="flex-1">
+                    <BoardTitle
+                      board={board}
+                      onUpdate={handleUpdateBoard}
+                      onNavigate={() => navigate(`/boards/${board.id}`)}
+                    />
                     {board.description && (
                       <p className="text-sm text-gray-500 mt-1">{board.description}</p>
                     )}

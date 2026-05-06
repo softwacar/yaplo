@@ -112,6 +112,16 @@ export default function Board() {
         : l
     ));
   };
+  const handleUpdateList = async (listId, title) => {
+  try {
+    await api.put(`/boards/${id}/lists/${listId}`, { title });
+    setLists(lists.map((l) => l.id === listId ? { ...l, title } : l));
+    toast.success('List updated!');
+  } catch (error) {
+    console.error('Failed to update list:', error);
+    toast.error('Failed to update list');
+  }
+};
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">Loading...</div>
@@ -140,6 +150,7 @@ export default function Board() {
             onAddCard={handleAddCard}
             onDeleteCard={handleDeleteCard}
             onCardClick={(listId, card) => setSelectedCard({ listId, card })}
+            onUpdateList={handleUpdateList}
           />
         ))}
 
@@ -206,10 +217,12 @@ export default function Board() {
 }
 
 // List Column Component
-function ListColumn({ list, onDeleteList, onAddCard, onDeleteCard, onCardClick }) {
+function ListColumn({ list, onDeleteList, onAddCard, onDeleteCard, onCardClick, onUpdateList }) {
   const [showAddCard, setShowAddCard] = useState(false);
   const [cardTitle, setCardTitle] = useState('');
   const [adding, setAdding] = useState(false);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [listTitle, setListTitle] = useState(list.title);
 
   const handleAddCard = async (e) => {
     e.preventDefault();
@@ -221,13 +234,47 @@ function ListColumn({ list, onDeleteList, onAddCard, onDeleteCard, onCardClick }
     setAdding(false);
   };
 
+  const handleTitleSave = async () => {
+    if (!listTitle.trim() || listTitle === list.title) {
+      setListTitle(list.title);
+      setIsEditingTitle(false);
+      return;
+    }
+    await onUpdateList(list.id, listTitle);
+    setIsEditingTitle(false);
+  };
+
   return (
     <div className="flex-shrink-0 w-72 bg-gray-100 rounded-xl shadow p-3">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="font-semibold text-gray-800 text-sm">{list.title}</h3>
+        {isEditingTitle ? (
+          <input
+            type="text"
+            value={listTitle}
+            onChange={(e) => setListTitle(e.target.value)}
+            onBlur={handleTitleSave}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleTitleSave();
+              if (e.key === 'Escape') {
+                setListTitle(list.title);
+                setIsEditingTitle(false);
+              }
+            }}
+            className="flex-1 border border-blue-400 rounded px-2 py-1 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
+            autoFocus
+          />
+        ) : (
+          <h3
+            onClick={() => setIsEditingTitle(true)}
+            className="font-semibold text-gray-800 text-sm cursor-pointer hover:text-blue-600 transition flex-1"
+            title="Click to edit"
+          >
+            {list.title}
+          </h3>
+        )}
         <button
           onClick={() => onDeleteList(list.id)}
-          className="text-gray-400 hover:text-red-500 transition text-lg leading-none"
+          className="text-gray-400 hover:text-red-500 transition text-lg leading-none ml-2"
         >
           ×
         </button>
