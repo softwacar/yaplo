@@ -1,0 +1,256 @@
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import api from '../api/axios';
+
+export default function Board() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [board, setBoard] = useState(null);
+  const [lists, setLists] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [newListTitle, setNewListTitle] = useState('');
+  const [showAddList, setShowAddList] = useState(false);
+  const [addingList, setAddingList] = useState(false);
+
+  useEffect(() => {
+    fetchBoard();
+  }, [id]);
+
+  const fetchBoard = async () => {
+    try {
+      const res = await api.get(`/boards/${id}`);
+      setBoard(res.data.board);
+      setLists(res.data.board.lists);
+    } catch (error) {
+      console.error('Failed to fetch board:', error);
+      navigate('/dashboard');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddList = async (e) => {
+    e.preventDefault();
+    if (!newListTitle.trim()) return;
+    setAddingList(true);
+    try {
+      const res = await api.post(`/boards/${id}/lists`, { title: newListTitle });
+      setLists([...lists, { ...res.data.list, cards: [] }]);
+      setNewListTitle('');
+      setShowAddList(false);
+    } catch (error) {
+      console.error('Failed to add list:', error);
+    } finally {
+      setAddingList(false);
+    }
+  };
+
+  const handleDeleteList = async (listId) => {
+    if (!confirm('Delete this list and all its cards?')) return;
+    try {
+      await api.delete(`/boards/${id}/lists/${listId}`);
+      setLists(lists.filter((l) => l.id !== listId));
+    } catch (error) {
+      console.error('Failed to delete list:', error);
+    }
+  };
+
+  const handleAddCard = async (listId, title) => {
+    try {
+      const res = await api.post(`/boards/${id}/lists/${listId}/cards`, { title });
+      setLists(lists.map((l) =>
+        l.id === listId ? { ...l, cards: [...l.cards, res.data.card] } : l
+      ));
+    } catch (error) {
+      console.error('Failed to add card:', error);
+    }
+  };
+
+  const handleDeleteCard = async (listId, cardId) => {
+    try {
+      await api.delete(`/boards/${id}/lists/${listId}/cards/${cardId}`);
+      setLists(lists.map((l) =>
+        l.id === listId ? { ...l, cards: l.cards.filter((c) => c.id !== cardId) } : l
+      ));
+    } catch (error) {
+      console.error('Failed to delete card:', error);
+    }
+  };
+
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center">Loading...</div>
+  );
+
+  return (
+    <div className="min-h-screen bg-blue-600">
+      {/* Navbar */}
+      <nav className="bg-blue-700 px-6 py-4 flex items-center gap-4">
+        <button
+          onClick={() => navigate('/dashboard')}
+          className="text-blue-200 hover:text-white transition text-sm"
+        >
+          ← Dashboard
+        </button>
+        <h1 className="text-white font-bold text-lg">{board?.title}</h1>
+      </nav>
+
+      {/* Board Content */}
+      <div className="p-6 flex gap-4 overflow-x-auto min-h-screen items-start">
+        {/* Lists */}
+        {lists.map((list) => (
+          <ListColumn
+            key={list.id}
+            list={list}
+            onDeleteList={handleDeleteList}
+            onAddCard={handleAddCard}
+            onDeleteCard={handleDeleteCard}
+          />
+        ))}
+
+        {/* Add List */}
+        <div className="flex-shrink-0 w-72">
+          {showAddList ? (
+            <form onSubmit={handleAddList} className="bg-white rounded-xl p-3 shadow">
+              <input
+                type="text"
+                value={newListTitle}
+                onChange={(e) => setNewListTitle(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
+                placeholder="List title..."
+                autoFocus
+              />
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  disabled={addingList}
+                  className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+                >
+                  {addingList ? 'Adding...' : 'Add List'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowAddList(false)}
+                  className="text-gray-500 hover:text-gray-700 px-3 py-1.5 text-sm"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          ) : (
+            <button
+              onClick={() => setShowAddList(true)}
+              className="w-full bg-white/20 hover:bg-white/30 text-white rounded-xl px-4 py-3 text-sm font-medium transition text-left"
+            >
+              + Add a list
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// List Column Component
+function ListColumn({ list, onDeleteList, onAddCard, onDeleteCard }) {
+  const [showAddCard, setShowAddCard] = useState(false);
+  const [cardTitle, setCardTitle] = useState('');
+  const [adding, setAdding] = useState(false);
+
+  const handleAddCard = async (e) => {
+    e.preventDefault();
+    if (!cardTitle.trim()) return;
+    setAdding(true);
+    await onAddCard(list.id, cardTitle);
+    setCardTitle('');
+    setShowAddCard(false);
+    setAdding(false);
+  };
+
+  return (
+    <div className="flex-shrink-0 w-72 bg-gray-100 rounded-xl shadow p-3">
+      {/* List Header */}
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-semibold text-gray-800 text-sm">{list.title}</h3>
+        <button
+          onClick={() => onDeleteList(list.id)}
+          className="text-gray-400 hover:text-red-500 transition text-lg leading-none"
+        >
+          ×
+        </button>
+      </div>
+
+      {/* Cards */}
+      <div className="space-y-2 mb-2">
+        {list.cards.map((card) => (
+          <CardItem
+            key={card.id}
+            card={card}
+            onDelete={() => onDeleteCard(list.id, card.id)}
+          />
+        ))}
+      </div>
+
+      {/* Add Card */}
+      {showAddCard ? (
+        <form onSubmit={handleAddCard}>
+          <textarea
+            value={cardTitle}
+            onChange={(e) => setCardTitle(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none mb-2"
+            placeholder="Card title..."
+            rows={2}
+            autoFocus
+          />
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              disabled={adding}
+              className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+            >
+              {adding ? 'Adding...' : 'Add Card'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowAddCard(false)}
+              className="text-gray-500 hover:text-gray-700 text-sm px-2"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      ) : (
+        <button
+          onClick={() => setShowAddCard(true)}
+          className="w-full text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-lg px-3 py-2 text-sm transition text-left"
+        >
+          + Add a card
+        </button>
+      )}
+    </div>
+  );
+}
+
+// Card Item Component
+function CardItem({ card, onDelete }) {
+  return (
+    <div className="bg-white rounded-lg px-3 py-2 shadow-sm hover:shadow transition group flex items-start justify-between">
+      <div className="flex-1">
+        <p className="text-sm text-gray-800">{card.title}</p>
+        {card.description && (
+          <p className="text-xs text-gray-400 mt-1">{card.description}</p>
+        )}
+        {card.dueDate && (
+          <p className="text-xs text-blue-500 mt-1">
+            📅 {new Date(card.dueDate).toLocaleDateString()}
+          </p>
+        )}
+      </div>
+      <button
+        onClick={onDelete}
+        className="text-gray-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100 ml-2 text-lg leading-none"
+      >
+        ×
+      </button>
+    </div>
+  );
+}

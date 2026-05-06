@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import Board from './pages/Board';
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -23,6 +24,7 @@ function AppRoutes() {
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
       <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+      <Route path="/boards/:id" element={<PrivateRoute><Board /></PrivateRoute>} />
     </Routes>
   );
 }
