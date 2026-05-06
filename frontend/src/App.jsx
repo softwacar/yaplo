@@ -4,6 +4,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Board from './pages/Board';
+import { ThemeProvider } from './context/ThemeContext';
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -31,11 +32,13 @@ function AppRoutes() {
 
 function App() {
   return (
+    <ThemeProvider>
     <BrowserRouter>
       <AuthProvider>
         <AppRoutes />
       </AuthProvider>
     </BrowserRouter>
+  </ThemeProvider>  
   );
 }
 

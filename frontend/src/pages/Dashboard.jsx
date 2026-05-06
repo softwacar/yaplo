@@ -5,6 +5,7 @@ import api from '../api/axios';
 import toast from 'react-hot-toast';
 import { BoardCardSkeleton } from '../components/Skeleton';
 import ConfirmModal from '../components/ConfirmModal';
+import { useTheme } from '../context/ThemeContext';
 
 const BOARD_COLORS = [
   { label: 'Blue',   value: '#3b82f6' },
@@ -29,6 +30,7 @@ export default function Dashboard() {
   const [creating, setCreating] = useState(false);
   const [confirmModal, setConfirmModal] = useState(null);
   const [search, setSearch] = useState('');
+  const { darkMode, toggleDarkMode } = useTheme();
 
   useEffect(() => {
     fetchBoards();
@@ -106,13 +108,20 @@ export default function Dashboard() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
       {/* Navbar */}
-      <nav className="bg-white shadow-sm px-4 sm:px-6 py-4 flex items-center justify-between">
+      <nav className="bg-white dark:bg-gray-800 shadow-sm px-4 sm:px-6 py-4 flex items-center justify-between">
         <h1 className="text-xl sm:text-2xl font-bold text-blue-600">Yaplo</h1>
         <div className="flex items-center gap-2 sm:gap-4">
-          <span className="text-gray-600 text-sm hidden sm:block">👋 {user?.name}</span>
-          <span className="text-gray-600 text-sm sm:hidden">👋</span>
+          <span className="text-gray-600 dark:text-gray-300 text-sm hidden sm:block">👋 {user?.name}</span>
+          <span className="text-gray-600 dark:text-gray-300 text-sm sm:hidden">👋</span>
+          <button
+            onClick={toggleDarkMode}
+            className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white text-lg transition"
+            title={darkMode ? 'Light mode' : 'Dark mode'}
+          >
+            {darkMode ? '☀️' : '🌙'}
+          </button>
           <button
             onClick={handleLogout}
             className="text-sm text-red-500 hover:text-red-700 font-medium"
@@ -125,7 +134,7 @@ export default function Dashboard() {
       {/* Content */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-gray-800">My Boards</h2>
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-white">My Boards</h2>
           <button
             onClick={() => setShowModal(true)}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
@@ -141,7 +150,7 @@ export default function Dashboard() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search boards..."
-            className="w-full border border-gray-300 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
           />
           <span className="absolute left-3 top-2.5 text-gray-400 text-sm">🔍</span>
           {search && (
@@ -182,7 +191,7 @@ export default function Dashboard() {
                 className="rounded-xl shadow-sm overflow-hidden hover:shadow-md transition cursor-pointer group"
               >
                 <div className="h-2" style={{ backgroundColor: board.color || '#3b82f6' }}></div>
-                <div className="bg-white p-5">
+                <div className="bg-white dark:bg-gray-800 p-5">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <BoardTitle
@@ -341,7 +350,7 @@ function BoardTitle({ board, onUpdate, onNavigate }) {
     <div>
       <h3
         onClick={onNavigate}
-        className="font-semibold text-gray-800 hover:text-blue-600 transition cursor-pointer"
+        className="font-semibold text-gray-800 dark:text-white hover:text-blue-600 transition cursor-pointer"
       >
         {board.title}
       </h3>
