@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../api/axios';
 import ConfirmModal from '../components/ConfirmModal';
+import { BoardPageSkeleton } from '../components/Skeleton';
 
 export default function Board() {
   const { id } = useParams();
@@ -103,9 +104,7 @@ export default function Board() {
     });
   };
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">Loading...</div>
-  );
+  if (loading) return <BoardPageSkeleton />;
 
   return (
     <div className="min-h-screen bg-blue-600">

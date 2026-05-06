@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 import ConfirmModal from '../components/ConfirmModal';
+import { BoardCardSkeleton } from '../components/Skeleton';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -103,8 +104,12 @@ export default function Dashboard() {
         </div>
 
         {loading ? (
-          <div className="text-center text-gray-500 py-12">Loading...</div>
-        ) : boards.length === 0 ? (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    {[1, 2, 3, 4, 5, 6].map((i) => (
+      <BoardCardSkeleton key={i} />
+    ))}
+  </div>
+) : boards.length === 0 ? (
           <div className="text-center text-gray-500 py-12">
             <p className="text-lg mb-2">No boards yet</p>
             <p className="text-sm">Create your first board to get started!</p>
