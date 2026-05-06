@@ -33,6 +33,9 @@ app.use('/api/boards', boardRoutes);
 const listRoutes = require('./routes/list.routes');
 app.use('/api/boards/:boardId/lists', listRoutes);
 
+const cardRoutes = require('./routes/card.routes');
+app.use('/api/boards/:boardId/lists/:listId/cards', cardRoutes);
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Yaplo API is running!' });
