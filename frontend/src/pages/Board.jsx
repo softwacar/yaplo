@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../api/axios';
 import ConfirmModal from '../components/ConfirmModal';
-import { BoardPageSkeleton } from '../components/Skeleton';
+import CardModal from '../components/CardModal';
 
 export default function Board() {
   const { id } = useParams();
@@ -15,6 +15,7 @@ export default function Board() {
   const [showAddList, setShowAddList] = useState(false);
   const [addingList, setAddingList] = useState(false);
   const [confirmModal, setConfirmModal] = useState(null);
+  const [selectedCard, setSelectedCard] = useState(null);
 
   useEffect(() => {
     fetchBoard();
@@ -104,7 +105,17 @@ export default function Board() {
     });
   };
 
-  if (loading) return <BoardPageSkeleton />;
+  const handleUpdateCard = (listId, updatedCard) => {
+    setLists(lists.map((l) =>
+      l.id === listId
+        ? { ...l, cards: l.cards.map((c) => c.id === updatedCard.id ? updatedCard : c) }
+        : l
+    ));
+  };
+
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center">Loading...</div>
+  );
 
   return (
     <div className="min-h-screen bg-blue-600">
@@ -128,6 +139,7 @@ export default function Board() {
             onDeleteList={handleDeleteList}
             onAddCard={handleAddCard}
             onDeleteCard={handleDeleteCard}
+            onCardClick={(listId, card) => setSelectedCard({ listId, card })}
           />
         ))}
 
@@ -171,6 +183,16 @@ export default function Board() {
         </div>
       </div>
 
+      {selectedCard && (
+        <CardModal
+          card={selectedCard.card}
+          listId={selectedCard.listId}
+          boardId={id}
+          onClose={() => setSelectedCard(null)}
+          onUpdate={handleUpdateCard}
+        />
+      )}
+
       {confirmModal && (
         <ConfirmModal
           title={confirmModal.title}
@@ -184,7 +206,7 @@ export default function Board() {
 }
 
 // List Column Component
-function ListColumn({ list, onDeleteList, onAddCard, onDeleteCard }) {
+function ListColumn({ list, onDeleteList, onAddCard, onDeleteCard, onCardClick }) {
   const [showAddCard, setShowAddCard] = useState(false);
   const [cardTitle, setCardTitle] = useState('');
   const [adding, setAdding] = useState(false);
@@ -217,6 +239,7 @@ function ListColumn({ list, onDeleteList, onAddCard, onDeleteCard }) {
             key={card.id}
             card={card}
             onDelete={() => onDeleteCard(list.id, card.id)}
+            onClick={() => onCardClick(list.id, card)}
           />
         ))}
       </div>
@@ -261,9 +284,12 @@ function ListColumn({ list, onDeleteList, onAddCard, onDeleteCard }) {
 }
 
 // Card Item Component
-function CardItem({ card, onDelete }) {
+function CardItem({ card, onDelete, onClick }) {
   return (
-    <div className="bg-white rounded-lg px-3 py-2 shadow-sm hover:shadow transition group flex items-start justify-between">
+    <div
+      onClick={onClick}
+      className="bg-white rounded-lg px-3 py-2 shadow-sm hover:shadow transition group flex items-start justify-between cursor-pointer"
+    >
       <div className="flex-1">
         <p className="text-sm text-gray-800">{card.title}</p>
         {card.description && (
@@ -276,7 +302,7 @@ function CardItem({ card, onDelete }) {
         )}
       </div>
       <button
-        onClick={onDelete}
+        onClick={(e) => { e.stopPropagation(); onDelete(); }}
         className="text-gray-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100 ml-2 text-lg leading-none"
       >
         ×
