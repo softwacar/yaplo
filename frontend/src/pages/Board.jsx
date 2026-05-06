@@ -5,6 +5,7 @@ import api from '../api/axios';
 import ConfirmModal from '../components/ConfirmModal';
 import CardModal from '../components/CardModal';
 import { BoardPageSkeleton } from '../components/Skeleton';
+import { getDueDateStatus } from '../utils/dateHelpers';
 
 export default function Board() {
   const { id } = useParams();
@@ -335,6 +336,15 @@ function ListColumn({ list, onDeleteList, onAddCard, onDeleteCard, onCardClick, 
 
 // Card Item Component
 function CardItem({ card, onDelete, onClick }) {
+  const dueDateStatus = card.dueDate ? getDueDateStatus(card.dueDate) : null;
+
+  const dueDateColors = {
+    red: 'bg-red-100 text-red-600',
+    yellow: 'bg-yellow-100 text-yellow-600',
+    orange: 'bg-orange-100 text-orange-600',
+    green: 'bg-green-100 text-green-600',
+  };
+
   return (
     <div
       onClick={onClick}
@@ -343,12 +353,12 @@ function CardItem({ card, onDelete, onClick }) {
       <div className="flex-1">
         <p className="text-sm text-gray-800">{card.title}</p>
         {card.description && (
-          <p className="text-xs text-gray-400 mt-1">{card.description}</p>
+          <p className="text-xs text-gray-400 mt-1 line-clamp-1">{card.description}</p>
         )}
-        {card.dueDate && (
-          <p className="text-xs text-blue-500 mt-1">
-            📅 {new Date(card.dueDate).toLocaleDateString()}
-          </p>
+        {dueDateStatus && (
+          <span className={`inline-block text-xs px-2 py-0.5 rounded-full mt-1.5 font-medium ${dueDateColors[dueDateStatus.color]}`}>
+            📅 {dueDateStatus.label}
+          </span>
         )}
       </div>
       <button

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
+import { getDueDateStatus } from '../utils/dateHelpers';
 
 export default function CardModal({ card, listId, boardId, onClose, onUpdate }) {
   const [title, setTitle] = useState(card.title);
@@ -24,11 +25,7 @@ export default function CardModal({ card, listId, boardId, onClose, onUpdate }) 
     try {
       const res = await api.put(
         `/boards/${boardId}/lists/${listId}/cards/${card.id}`,
-        {
-          title,
-          description,
-          dueDate: dueDate || null,
-        }
+        { title, description, dueDate: dueDate || null }
       );
       onUpdate(listId, res.data.card);
       toast.success('Card updated!');
@@ -39,6 +36,15 @@ export default function CardModal({ card, listId, boardId, onClose, onUpdate }) 
     } finally {
       setSaving(false);
     }
+  };
+
+  const status = dueDate ? getDueDateStatus(dueDate) : null;
+
+  const statusStyles = {
+    red: 'bg-red-100 text-red-600',
+    yellow: 'bg-yellow-100 text-yellow-600',
+    orange: 'bg-orange-100 text-orange-600',
+    green: 'bg-green-100 text-green-600',
   };
 
   return (
@@ -62,9 +68,7 @@ export default function CardModal({ card, listId, boardId, onClose, onUpdate }) 
         <div className="px-6 py-4 space-y-4">
           {/* Title */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Title
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
             <input
               type="text"
               value={title}
@@ -76,9 +80,7 @@ export default function CardModal({ card, listId, boardId, onClose, onUpdate }) 
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -90,15 +92,18 @@ export default function CardModal({ card, listId, boardId, onClose, onUpdate }) 
 
           {/* Due Date */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Due Date
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
             <input
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+            {status && (
+              <div className={`text-xs px-3 py-1.5 rounded-lg font-medium inline-block mt-2 ${statusStyles[status.color]}`}>
+                📅 {status.label}
+              </div>
+            )}
           </div>
         </div>
 
