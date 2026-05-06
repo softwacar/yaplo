@@ -52,7 +52,7 @@ export default function CardModal({ card, listId, boardId, onClose, onUpdate }) 
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 max-h-screen overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-gray-100">
           <h2 className="text-lg font-semibold text-gray-800">Edit Card</h2>

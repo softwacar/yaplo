@@ -131,21 +131,18 @@ export default function Board() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: board?.color || '#3b82f6' }}>
       {/* Navbar */}
-      <nav
-        className="px-6 py-4 flex items-center gap-4"
-        style={{ backgroundColor: `${board?.color || '#3b82f6'}dd` }}
-      >
+            <nav className="px-4 sm:px-6 py-4 flex items-center gap-3" style={{ backgroundColor: `${board?.color}dd` }}>
         <button
           onClick={() => navigate('/dashboard')}
-          className="text-white/70 hover:text-white transition text-sm"
+          className="text-white/80 hover:text-white transition text-sm flex-shrink-0"
         >
-          ← Dashboard
+          ← Back
         </button>
-        <h1 className="text-white font-bold text-lg">{board?.title}</h1>
+        <h1 className="text-white font-bold text-base sm:text-lg truncate">{board?.title}</h1>
       </nav>
 
       {/* Board Content */}
-      <div className="p-6 flex gap-4 overflow-x-auto min-h-screen items-start">
+      <div className="p-3 sm:p-6 flex gap-3 sm:gap-4 overflow-x-auto min-h-screen items-start">
         {lists.map((list) => (
           <ListColumn
             key={list.id}
@@ -159,7 +156,7 @@ export default function Board() {
         ))}
 
         {/* Add List */}
-        <div className="flex-shrink-0 w-72">
+        <div className="flex-shrink-0 w-64 sm:w-72">
           {showAddList ? (
             <form onSubmit={handleAddList} className="bg-white rounded-xl p-3 shadow">
               <input
@@ -249,7 +246,7 @@ function ListColumn({ list, onDeleteList, onAddCard, onDeleteCard, onCardClick, 
   };
 
   return (
-    <div className="flex-shrink-0 w-72 bg-gray-100 rounded-xl shadow p-3">
+    <div className="flex-shrink-0 w-64 sm:w-72 bg-gray-100 rounded-xl shadow p-3">
       <div className="flex items-center justify-between mb-3">
         {isEditingTitle ? (
           <input

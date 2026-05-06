@@ -108,10 +108,11 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Navbar */}
-      <nav className="bg-white shadow-sm px-6 py-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-blue-600">Yaplo</h1>
-        <div className="flex items-center gap-4">
-          <span className="text-gray-600 text-sm">👋 {user?.name}</span>
+      <nav className="bg-white shadow-sm px-4 sm:px-6 py-4 flex items-center justify-between">
+        <h1 className="text-xl sm:text-2xl font-bold text-blue-600">Yaplo</h1>
+        <div className="flex items-center gap-2 sm:gap-4">
+          <span className="text-gray-600 text-sm hidden sm:block">👋 {user?.name}</span>
+          <span className="text-gray-600 text-sm sm:hidden">👋</span>
           <button
             onClick={handleLogout}
             className="text-sm text-red-500 hover:text-red-700 font-medium"
@@ -122,7 +123,7 @@ export default function Dashboard() {
       </nav>
 
       {/* Content */}
-      <div className="max-w-6xl mx-auto px-6 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-gray-800">My Boards</h2>
           <button
