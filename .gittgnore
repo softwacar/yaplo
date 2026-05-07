@@ -33,3 +33,5 @@ prisma/migrations/dev/
 
 # Docker
 docker-compose.override.yml
+
+frontend/.env

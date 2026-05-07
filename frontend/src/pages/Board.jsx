@@ -255,8 +255,19 @@ export default function Board() {
   );
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: board?.color || '#3b82f6' }}>
-      <nav className="px-4 sm:px-6 py-4 flex items-center gap-3" style={{ backgroundColor: `${board?.color}dd` }}>
+    <div
+        className="min-h-screen"
+        style={{
+          backgroundColor: board?.color || '#3b82f6',
+          backgroundImage: board?.image ? `url(${board.image})` : 'none',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+      <nav
+          className="px-4 sm:px-6 py-4 flex items-center gap-3 backdrop-blur-sm"
+          style={{ backgroundColor: board?.image ? 'rgba(0,0,0,0.4)' : `${board?.color}dd` }}
+        >
         <button onClick={() => navigate('/dashboard')} className="text-white/80 hover:text-white transition text-sm flex-shrink-0">
           ← Back
         </button>
