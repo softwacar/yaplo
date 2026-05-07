@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import Logo from '../components/Logo';
 
 export default function Register() {
   const [name, setName] = useState('');
@@ -31,7 +32,10 @@ export default function Register() {
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center px-4">
       <div className="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-md w-full max-w-md">
-        <h1 className="text-3xl font-bold text-blue-600 mb-2">Yaplo</h1>
+        <div className="flex items-center gap-3 mb-2">
+          <Logo size={40} />
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Yaplo</h1>
+        </div>
         <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-6">Create your account</h2>
 
         {error && (

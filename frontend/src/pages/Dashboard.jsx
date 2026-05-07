@@ -6,6 +6,7 @@ import api from '../api/axios';
 import toast from 'react-hot-toast';
 import { BoardCardSkeleton } from '../components/Skeleton';
 import ConfirmModal from '../components/ConfirmModal';
+import Logo from '../components/Logo';
 
 const BOARD_COLORS = [
   { label: 'Blue',   value: '#3b82f6' },
@@ -158,9 +159,7 @@ export default function Dashboard() {
       <nav className="h-14 bg-white dark:bg-[#1e2a3a] border-b border-gray-200 dark:border-gray-700 flex items-center px-8 gap-3 fixed top-0 left-0 right-0 z-40">
         {/* Logo */}
         <div className="flex items-center gap-2 w-56 flex-shrink-0">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">Y</span>
-          </div>
+          <Logo size={36} />
           <span className="font-bold text-gray-800 dark:text-white text-lg">Yaplo</span>
         </div>
 

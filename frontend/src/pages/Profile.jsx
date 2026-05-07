@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
+import Logo from '../components/Logo';
 
 export default function Profile() {
   const { user, logout, updateUser } = useAuth();
@@ -137,7 +138,10 @@ export default function Profile() {
           >
             ← Dashboard
           </button>
-          <h1 className="text-xl font-bold text-blue-600">Profile</h1>
+          <div className="flex items-center gap-2">
+            <Logo size={28} />
+            <h1 className="text-xl font-bold text-gray-800 dark:text-white">Yaplo</h1>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <button
